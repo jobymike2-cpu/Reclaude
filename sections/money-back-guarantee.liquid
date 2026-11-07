@@ -1,0 +1,1330 @@
+{%- comment -%}
+  ============================================================================
+  SECTION : Money-Back Guarantee (badge + texte + bouton + image)
+  FICHIER : sections/money-back-guarantee.liquid
+  ----------------------------------------------------------------------------
+  - Section Online Store 2.0 100 % autonome (aucun snippet, asset ou
+    réglage global requis). Compatible Dawn.
+  - Colonne de contenu construite avec des BLOCS réorganisables :
+    Badge, Sur-titre, Titre, Texte, Bouton et "Applications" (@app)
+    -> le bloc @app permet d'insérer votre application de Bundle
+       directement dans la section depuis l'éditeur de thème.
+  - Tout le CSS est scopé avec l'ID de la section.
+  - JS vanilla minimal : apparition au scroll + défilement doux du bouton
+    vers le formulaire produit / votre app de bundle.
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign root_id = 'Guarantee-' | append: section.id
+
+  case s.layout_type
+    when 'full'
+      assign max_w = 'none'
+    when 'narrow'
+      assign max_w = '900px'
+    else
+      assign max_w = s.section_max_width | append: 'px'
+  endcase
+
+  case s.heading_font
+    when 'system'
+      assign heading_stack = "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+    when 'serif'
+      assign heading_stack = "Georgia, 'Times New Roman', serif"
+    when 'inherit'
+      assign heading_stack = 'inherit'
+    else
+      assign heading_stack = "'Poppins', 'Montserrat', 'Avenir Next', 'Segoe UI', system-ui, -apple-system, sans-serif"
+  endcase
+
+  case s.body_font
+    when 'system'
+      assign body_stack = "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+    when 'inherit'
+      assign body_stack = 'inherit'
+    else
+      assign body_stack = "'Poppins', 'Montserrat', 'Avenir Next', 'Segoe UI', system-ui, -apple-system, sans-serif"
+  endcase
+
+  if s.accent_font == 'same'
+    assign accent_stack = heading_stack
+  else
+    assign accent_stack = "'Playfair Display', 'Cormorant Garamond', Georgia, 'Times New Roman', serif"
+  endif
+
+  case s.image_ratio
+    when 'portrait'
+      assign img_ratio = '4 / 5'
+    when 'landscape'
+      assign img_ratio = '4 / 3'
+    when 'natural'
+      assign img_ratio = 'auto'
+    else
+      assign img_ratio = '1 / 1'
+  endcase
+
+  assign bg = s.background_color
+  if s.background_gradient
+    assign bg = 'linear-gradient(135deg, ' | append: s.background_color | append: ' 0%, ' | append: s.background_color_2 | append: ' 100%)'
+  endif
+  if s.show_glow
+    assign glow = 'radial-gradient(circle at 14% 22%, ' | append: s.glow_color | append: ' 0%, transparent 38%)'
+    assign bg = glow | append: ', ' | append: bg
+  endif
+
+  assign img_alt = s.image_alt | default: s.image.alt
+  assign img_style = ''
+  if s.image != blank
+    assign img_style = 'object-position: ' | append: s.image.presentation.focal_point | append: ';'
+  endif
+-%}
+
+{%- comment -%} ======================= CSS (scopé) ======================= {%- endcomment -%}
+<style>
+  /* ---------- Variables générées depuis l'éditeur de thème ---------- */
+  #{{ root_id }} {
+    --gr-max-w: {{ max_w }};
+    --gr-content-w: {{ s.content_width }}%;
+    --gr-content-max: {{ s.content_max_width }}px;
+    --gr-gap: {{ s.column_gap }}px;
+    --gr-row-gap: {{ s.mobile_row_gap }}px;
+    --gr-pt: {{ s.padding_top_mobile }}px;
+    --gr-pb: {{ s.padding_bottom_mobile }}px;
+    --gr-px: {{ s.side_padding_mobile }}px;
+    --gr-radius: {{ s.section_radius }}px;
+    --gr-bg: {{ bg }};
+    --gr-heading: {{ s.heading_color }};
+    --gr-accent: {{ s.accent_color }};
+    --gr-text: {{ s.text_color }};
+    --gr-eyebrow: {{ s.eyebrow_color }};
+    --gr-btn-1: {{ s.button_color }};
+    --gr-btn-2: {{ s.button_color_2 }};
+    --gr-btn-text: {{ s.button_text_color }};
+    --gr-heading-font: {{ heading_stack }};
+    --gr-accent-font: {{ accent_stack }};
+    --gr-body-font: {{ body_stack }};
+    --gr-h-size: {{ s.heading_size_mobile }}px;
+    --gr-t-size: {{ s.text_size_mobile }}px;
+    --gr-img-ratio: {{ img_ratio }};
+    --gr-img-radius: {{ s.image_radius }}px;
+    --gr-align: {{ s.mobile_text_align }};
+    --gr-items: {% if s.mobile_text_align == 'center' %}center{% else %}flex-start{% endif %};
+
+    position: relative;
+    padding-inline: var(--gr-px);
+    font-family: var(--gr-body-font);
+    color: var(--gr-text);
+  }
+
+  @media screen and (min-width: 750px) {
+    #{{ root_id }} {
+      --gr-pt: {{ s.padding_top }}px;
+      --gr-pb: {{ s.padding_bottom }}px;
+      --gr-px: {{ s.side_padding }}px;
+      --gr-h-size: {{ s.heading_size }}px;
+      --gr-t-size: {{ s.text_size }}px;
+      --gr-align: {{ s.desktop_text_align }};
+      --gr-items: {% if s.desktop_text_align == 'center' %}center{% else %}flex-start{% endif %};
+    }
+  }
+
+  /* ---------- Fond : pleine largeur ou "boîte" arrondie ---------- */
+  #{{ root_id }}.gr--full { background: var(--gr-bg); }
+  #{{ root_id }}.gr--full .gr__box { border-radius: 0; }
+  #{{ root_id }}.gr--boxed .gr__box {
+    background: var(--gr-bg);
+    padding-inline: clamp(20px, 5vw, 64px);
+  }
+
+  /* ---------- Conteneur largeur (n'utilise pas .page-width) ---------- */
+  #{{ root_id }} .gr__box {
+    max-width: var(--gr-max-w);
+    margin-inline: auto;
+    padding-block: var(--gr-pt) var(--gr-pb);
+    border-radius: var(--gr-radius);
+    overflow: hidden;
+  }
+
+  /* ---------- Grille 2 colonnes (mobile = empilé) ---------- */
+  #{{ root_id }} .gr__grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gr-row-gap);
+  }
+  #{{ root_id }}.gr--m-img-bottom .gr__media { order: 2; }
+  #{{ root_id }}.gr--m-img-top .gr__media { order: -1; }
+
+  @media screen and (min-width: 750px) {
+    #{{ root_id }} .gr__grid {
+      display: grid;
+      grid-template-columns: var(--gr-content-w) minmax(0, 1fr);
+      align-items: {{ s.vertical_align }};
+      gap: var(--gr-gap);
+    }
+    #{{ root_id }} .gr__media { order: 2 !important; }
+    #{{ root_id }}.gr--img-left .gr__grid { grid-template-columns: minmax(0, 1fr) var(--gr-content-w); }
+    #{{ root_id }}.gr--img-left .gr__media { order: -1 !important; }
+  }
+
+  /* ---------- Colonne de contenu ---------- */
+  #{{ root_id }} .gr__content {
+    display: flex;
+    flex-direction: column;
+    align-items: var(--gr-items);
+    text-align: var(--gr-align);
+    max-width: var(--gr-content-max);
+    width: 100%;
+    min-width: 0;
+  }
+  #{{ root_id }}.gr--align-center .gr__content { margin-inline: auto; }
+  @media screen and (min-width: 750px) {
+    #{{ root_id }} .gr__content { margin-inline: 0; }
+    #{{ root_id }}.gr--dalign-center .gr__content { margin-inline: auto; }
+    #{{ root_id }}.gr--img-left .gr__content { justify-self: end; }
+  }
+  #{{ root_id }} .gr__block { margin: 0 0 var(--gr-mb, 0); max-width: 100%; }
+  #{{ root_id }} .gr__block:last-child { margin-bottom: 0; }
+
+  /* ---------- Badge (sceau dentelé) ---------- */
+  #{{ root_id }} .gr__badge {
+    position: relative;
+    width: var(--gr-badge-m);
+    aspect-ratio: 1 / 1;
+    flex-shrink: 0;
+  }
+  @media screen and (min-width: 750px) {
+    #{{ root_id }} .gr__badge { width: var(--gr-badge-d); }
+  }
+  /* halo doux derrière le badge */
+  #{{ root_id }} .gr__badge::before {
+    content: "";
+    position: absolute;
+    inset: -18%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 70%);
+    z-index: 0;
+    pointer-events: none;
+  }
+  #{{ root_id }} .gr__badge svg,
+  #{{ root_id }} .gr__badge img {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 16px rgba(23, 60, 50, 0.28));
+  }
+  #{{ root_id }} .gr__badge-text { font-family: var(--gr-heading-font); }
+  #{{ root_id }} .gr__badge--float svg,
+  #{{ root_id }} .gr__badge--float img { animation: gr-float-{{ section.id }} 4.5s ease-in-out infinite; }
+  #{{ root_id }} .gr__badge--spin .gr__seal-edge {
+    transform-origin: 100px 100px;
+    animation: gr-spin-{{ section.id }} 40s linear infinite;
+  }
+  @keyframes gr-float-{{ section.id }} {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  @keyframes gr-spin-{{ section.id }} {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ---------- Sur-titre ---------- */
+  #{{ root_id }} .gr__eyebrow {
+    font-family: var(--gr-body-font);
+    font-size: var(--gr-eb-size, 12px);
+    font-weight: 700;
+    letter-spacing: var(--gr-eb-ls, 0.16em);
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--gr-eyebrow);
+  }
+
+  /* ---------- Titre ---------- */
+  #{{ root_id }} .gr__heading {
+    font-family: var(--gr-heading-font);
+    font-size: var(--gr-h-size);
+    font-weight: 700;
+    line-height: 1.18;
+    letter-spacing: -0.01em;
+    color: var(--gr-heading);
+    text-wrap: balance;
+  }
+  #{{ root_id }} .gr__heading em {
+    font-family: var(--gr-accent-font);
+    font-style: italic;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--gr-accent);
+  }
+
+  /* ---------- Texte ---------- */
+  #{{ root_id }} .gr__text {
+    font-size: var(--gr-t-size);
+    line-height: 1.8;
+    letter-spacing: 0.01em;
+    color: var(--gr-text);
+    max-width: var(--gr-text-max, 520px);
+  }
+  #{{ root_id }} .gr__text > * { margin: 0 0 0.8em; }
+  #{{ root_id }} .gr__text > *:last-child { margin-bottom: 0; }
+  #{{ root_id }} .gr__text a { color: var(--gr-accent); text-underline-offset: 3px; }
+
+  /* ---------- Bouton ---------- */
+  #{{ root_id }} .gr__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 52px;
+    padding: 16px 32px;
+    border: 2px solid transparent;
+    border-radius: var(--gr-btn-radius, 999px);
+    background-image: linear-gradient(100deg, var(--gr-btn-1) 0%, var(--gr-btn-2) 50%, var(--gr-btn-1) 100%);
+    background-size: 200% 100%;
+    background-position: 0% 0;
+    color: var(--gr-btn-text);
+    font-family: var(--gr-body-font);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    text-decoration: none;
+    box-shadow: 0 12px 24px -8px rgba(23, 60, 50, 0.45);
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background-position 0.5s ease;
+  }
+  #{{ root_id }} .gr__btn:hover {
+    transform: translateY(-2px);
+    background-position: 100% 0;
+    box-shadow: 0 16px 30px -8px rgba(23, 60, 50, 0.55);
+  }
+  #{{ root_id }} .gr__btn:active { transform: translateY(0); }
+  #{{ root_id }} .gr__btn:focus-visible {
+    outline: 2px solid var(--gr-btn-1);
+    outline-offset: 4px;
+  }
+  #{{ root_id }} .gr__btn--outline {
+    background: transparent;
+    border-color: var(--gr-btn-1);
+    color: var(--gr-btn-1);
+    box-shadow: none;
+  }
+  #{{ root_id }} .gr__btn--outline:hover {
+    background: var(--gr-btn-1);
+    color: var(--gr-btn-text);
+    box-shadow: 0 12px 24px -8px rgba(23, 60, 50, 0.4);
+  }
+  #{{ root_id }} .gr__btn-arrow {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    transition: transform 0.25s ease;
+  }
+  #{{ root_id }} .gr__btn:hover .gr__btn-arrow { transform: translateX(4px); }
+  @media screen and (max-width: 749px) {
+    #{{ root_id }} .gr__btn-wrap--full { width: 100%; }
+    #{{ root_id }} .gr__btn-wrap--full .gr__btn { width: 100%; }
+  }
+
+  /* ---------- Bloc application (ex. app de Bundle) ---------- */
+  #{{ root_id }} .gr__app { width: 100%; text-align: left; }
+
+  /* ---------- Image ---------- */
+  #{{ root_id }} .gr__media { min-width: 0; }
+  #{{ root_id }} .gr__frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--gr-img-radius);
+    aspect-ratio: var(--gr-img-ratio);
+    background: rgba(0, 0, 0, 0.04);
+    {%- if s.image_shadow %}
+    box-shadow: 0 24px 48px -16px rgba(23, 37, 31, 0.3);
+    {%- endif %}
+    isolation: isolate;
+  }
+  #{{ root_id }} .gr__frame img,
+  #{{ root_id }} .gr__frame svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  #{{ root_id }}.gr--ratio-natural .gr__frame img { height: auto; }
+  #{{ root_id }}.gr--zoom .gr__frame:hover img { transform: scale(1.04); }
+
+  /* ---------- Animation d'apparition (activée seulement par le JS) ---------- */
+  #{{ root_id }}.gr--reveal-ready [data-gr-reveal] {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: var(--gr-delay, 0ms);
+  }
+  #{{ root_id }}.gr--reveal-ready [data-gr-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #{{ root_id }} *,
+    #{{ root_id }} *::before { animation: none !important; transition: none !important; }
+  }
+</style>
+
+{%- comment -%} ======================= HTML ======================= {%- endcomment -%}
+<section
+  id="{{ root_id }}"
+  class="gr gr--{{ s.background_style }} gr--img-{{ s.image_position }} gr--m-img-{{ s.mobile_image_position }} gr--align-{{ s.mobile_text_align }} gr--dalign-{{ s.desktop_text_align }} gr--ratio-{{ s.image_ratio }}{% if s.image_hover_zoom %} gr--zoom{% endif %}"
+  data-reveal="{{ s.enable_reveal }}"
+  aria-label="{{ s.section_label | escape }}"
+>
+  <div class="gr__box">
+    <div class="gr__grid">
+      {%- comment -%} ---------- Colonne contenu (blocs) ---------- {%- endcomment -%}
+      <div class="gr__content">
+        {%- for block in section.blocks -%}
+          {%- assign delay = forloop.index0 | times: 90 -%}
+          {%- case block.type -%}
+
+            {%- when '@app' -%}
+              {%- comment -%} Bloc d'application : votre app de Bundle s'affiche ici {%- endcomment -%}
+              <div class="gr__block gr__app" style="--gr-mb: 24px;" {{ block.shopify_attributes }}>
+                {% render block %}
+              </div>
+
+            {%- when 'badge' -%}
+              {%- assign b = block.settings -%}
+              <div
+                class="gr__block gr__badge{% if b.animation != 'none' %} gr__badge--{{ b.animation }}{% endif %}"
+                style="--gr-mb: {{ b.spacing_bottom }}px; --gr-badge-d: {{ b.size }}px; --gr-badge-m: {{ b.size_mobile }}px; --gr-delay: {{ delay }}ms;"
+                data-gr-reveal
+                {{ block.shopify_attributes }}
+              >
+                {%- if b.custom_image != blank -%}
+                  {{ b.custom_image | image_url: width: 500 | image_tag: loading: 'lazy', widths: '200, 300, 400, 500', sizes: '220px' }}
+                {%- else -%}
+                  {%- assign grad_id = 'gr-grad-' | append: block.id -%}
+                  <svg viewBox="0 0 200 200" role="img" aria-label="{{ b.number | escape }} {{ b.label | escape }} {{ b.sublabel | escape }}" focusable="false">
+                    <defs>
+                      <linearGradient id="{{ grad_id }}" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="{{ b.color_1 }}"/>
+                        <stop offset="1" stop-color="{{ b.color_2 }}"/>
+                      </linearGradient>
+                    </defs>
+                    {%- comment -%} Bord dentelé du sceau {%- endcomment -%}
+                    <path class="gr__seal-edge" fill="url(#{{ grad_id }})" stroke-linejoin="round" stroke="url(#{{ grad_id }})" stroke-width="2" d="M100.0 2.0 L107.8 10.3 L117.0 3.5 L123.3 13.1 L133.5 7.9 L138.0 18.4 L149.0 15.1 L151.6 26.3 L163.0 24.9 L163.6 36.4 L175.1 37.0 L173.7 48.4 L184.9 51.0 L181.6 62.0 L192.1 66.5 L186.9 76.7 L196.5 83.0 L189.7 92.2 L198.0 100.0 L189.7 107.8 L196.5 117.0 L186.9 123.3 L192.1 133.5 L181.6 138.0 L184.9 149.0 L173.7 151.6 L175.1 163.0 L163.6 163.6 L163.0 175.1 L151.6 173.7 L149.0 184.9 L138.0 181.6 L133.5 192.1 L123.3 186.9 L117.0 196.5 L107.8 189.7 L100.0 198.0 L92.2 189.7 L83.0 196.5 L76.7 186.9 L66.5 192.1 L62.0 181.6 L51.0 184.9 L48.4 173.7 L37.0 175.1 L36.4 163.6 L24.9 163.0 L26.3 151.6 L15.1 149.0 L18.4 138.0 L7.9 133.5 L13.1 123.3 L3.5 117.0 L10.3 107.8 L2.0 100.0 L10.3 92.2 L3.5 83.0 L13.1 76.7 L7.9 66.5 L18.4 62.0 L15.1 51.0 L26.3 48.4 L24.9 37.0 L36.4 36.4 L37.0 24.9 L48.4 26.3 L51.0 15.1 L62.0 18.4 L66.5 7.9 L76.7 13.1 L83.0 3.5 L92.2 10.3Z"/>
+                    {%- comment -%} Disque intérieur + fines bagues {%- endcomment -%}
+                    <circle cx="100" cy="100" r="80" fill="{{ b.color_2 }}" fill-opacity="0.35"/>
+                    <circle cx="100" cy="100" r="80" fill="none" stroke="{{ b.number_color }}" stroke-opacity="0.18" stroke-width="1.2"/>
+                    <circle cx="100" cy="100" r="74" fill="none" stroke="{{ b.sublabel_color }}" stroke-opacity="0.35" stroke-width="0.8" stroke-dasharray="1.5 3"/>
+                    {%- comment -%} Textes {%- endcomment -%}
+                    <text class="gr__badge-text" x="100" y="106" text-anchor="middle" font-size="60" font-weight="800" fill="{{ b.number_color }}">{{ b.number | escape }}</text>
+                    <text class="gr__badge-text" x="100" y="128" text-anchor="middle" font-size="13" font-weight="700" letter-spacing="2.5" fill="{{ b.number_color }}">{{ b.label | escape }}</text>
+                    <line x1="82" y1="137" x2="118" y2="137" stroke="{{ b.sublabel_color }}" stroke-opacity="0.6" stroke-width="0.8"/>
+                    <text class="gr__badge-text" x="100" y="148" text-anchor="middle" font-size="8.5" font-weight="700" letter-spacing="1.6" fill="{{ b.sublabel_color }}">{{ b.sublabel | escape }}</text>
+                    {%- if b.show_stars -%}
+                      {%- comment -%} Petites étoiles dorées {%- endcomment -%}
+                      <g fill="{{ b.sublabel_color }}">
+                        <path transform="translate(52 98) scale(5)" d="M0-1L.25-.25 1 0 .25.25 0 1-.25.25-1 0-.25-.25Z"/>
+                        <path transform="translate(148 98) scale(5)" d="M0-1L.25-.25 1 0 .25.25 0 1-.25.25-1 0-.25-.25Z"/>
+                        <path transform="translate(100 160) scale(4)" d="M0-1L.25-.25 1 0 .25.25 0 1-.25.25-1 0-.25-.25Z"/>
+                        <path transform="translate(100 42) scale(3.5)" d="M0-1L.25-.25 1 0 .25.25 0 1-.25.25-1 0-.25-.25Z"/>
+                      </g>
+                    {%- endif -%}
+                  </svg>
+                {%- endif -%}
+              </div>
+
+            {%- when 'eyebrow' -%}
+              {%- assign b = block.settings -%}
+              {%- if b.text != blank -%}
+                <p
+                  class="gr__block gr__eyebrow"
+                  style="--gr-mb: {{ b.spacing_bottom }}px; --gr-eb-size: {{ b.size }}px; --gr-eb-ls: {{ b.letter_spacing | divided_by: 100.0 }}em; --gr-delay: {{ delay }}ms;"
+                  data-gr-reveal
+                  {{ block.shopify_attributes }}
+                >
+                  {{ b.text | escape }}
+                </p>
+              {%- endif -%}
+
+            {%- when 'heading' -%}
+              {%- assign b = block.settings -%}
+              <{{ b.heading_tag }}
+                class="gr__block gr__heading"
+                style="--gr-mb: {{ b.spacing_bottom }}px; --gr-delay: {{ delay }}ms;"
+                data-gr-reveal
+                {{ block.shopify_attributes }}
+              >
+                {%- if b.heading_start != blank -%}{{ b.heading_start | escape }} {% endif -%}
+                {%- if b.heading_accent != blank -%}<em>{{ b.heading_accent | escape }}</em>{%- endif -%}
+                {%- if b.heading_end != blank -%}
+                  {%- if b.end_on_new_line -%}<br>{%- else %} {% endif -%}
+                  {{- b.heading_end | escape -}}
+                {%- endif -%}
+              </{{ b.heading_tag }}>
+
+            {%- when 'text' -%}
+              {%- assign b = block.settings -%}
+              {%- if b.text != blank -%}
+                <div
+                  class="gr__block gr__text"
+                  style="--gr-mb: {{ b.spacing_bottom }}px; --gr-text-max: {{ b.max_width }}px; --gr-delay: {{ delay }}ms;"
+                  data-gr-reveal
+                  {{ block.shopify_attributes }}
+                >
+                  {{ b.text }}
+                </div>
+              {%- endif -%}
+
+            {%- when 'button' -%}
+              {%- assign b = block.settings -%}
+              {%- if b.label != blank -%}
+                <div
+                  class="gr__block gr__btn-wrap{% if b.full_width_mobile %} gr__btn-wrap--full{% endif %}"
+                  style="--gr-mb: {{ b.spacing_bottom }}px; --gr-btn-radius: {{ b.radius }}px; --gr-delay: {{ delay }}ms;"
+                  data-gr-reveal
+                  {{ block.shopify_attributes }}
+                >
+                  {%- comment -%}
+                    Lien rempli -> lien normal.
+                    Lien vide -> défilement doux vers la cible (votre app de Bundle / le formulaire produit).
+                  {%- endcomment -%}
+                  <a
+                    class="gr__btn{% if b.button_style == 'outline' %} gr__btn--outline{% endif %}"
+                    {% if b.link != blank %}
+                      href="{{ b.link }}"
+                    {% else %}
+                      href="#MainContent"
+                      data-gr-scroll="{{ b.scroll_target | escape }}"
+                      data-gr-offset="{{ b.scroll_offset }}"
+                    {% endif %}
+                  >
+                    <span>{{ b.label | escape }}</span>
+                    {%- if b.show_arrow -%}
+                      <svg class="gr__btn-arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                        <path d="M2 8h11M9 3.5 13.5 8 9 12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    {%- endif -%}
+                  </a>
+                </div>
+              {%- endif -%}
+
+          {%- endcase -%}
+        {%- endfor -%}
+      </div>
+
+      {%- comment -%} ---------- Colonne image ---------- {%- endcomment -%}
+      <div class="gr__media" data-gr-reveal style="--gr-delay: 150ms;">
+        <div class="gr__frame">
+          {%- if s.image != blank -%}
+            {{
+              s.image
+              | image_url: width: 1600
+              | image_tag:
+                loading: 'lazy',
+                widths: '375, 550, 750, 900, 1100, 1400, 1600',
+                sizes: '(min-width: 1200px) 560px, (min-width: 750px) 45vw, calc(100vw - 32px)',
+                alt: img_alt,
+                style: img_style
+            }}
+          {%- else -%}
+            {{ 'lifestyle-1' | placeholder_svg_tag: 'gr__placeholder' }}
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{%- comment -%} ======================= JavaScript (scopé, sans librairie) ======================= {%- endcomment -%}
+<script>
+  (function () {
+    var root = document.getElementById('{{ root_id }}');
+    if (!root || root.hasAttribute('data-gr-init')) return;
+    root.setAttribute('data-gr-init', '');
+
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* --- 1. Bouton : défilement doux vers la cible (app de Bundle / formulaire produit) --- */
+    function findTarget(selector) {
+      var el = null;
+      if (selector) {
+        el = document.getElementById(selector.replace(/^#/, ''));
+        if (!el) {
+          try { el = document.querySelector(selector); } catch (e) { el = null; }
+        }
+      }
+      return el || document.querySelector('product-form, form[action*="/cart/add"]');
+    }
+
+    root.querySelectorAll('[data-gr-scroll]').forEach(function (link) {
+      link.addEventListener('click', function (event) {
+        var target = findTarget(link.getAttribute('data-gr-scroll'));
+        if (!target) return;
+        event.preventDefault();
+        var offset = parseInt(link.getAttribute('data-gr-offset'), 10) || 0;
+        var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: top, behavior: reduceMotion ? 'auto' : 'smooth' });
+        var focusable = target.querySelector('button, input, select, a[href]');
+        if (focusable) focusable.focus({ preventScroll: true });
+      });
+    });
+
+    /* --- 2. Apparition au scroll (désactivée dans l'éditeur et si mouvement réduit) --- */
+    var inEditor = window.Shopify && window.Shopify.designMode;
+    if (root.getAttribute('data-reveal') !== 'true' || reduceMotion || inEditor || !('IntersectionObserver' in window)) return;
+
+    root.classList.add('gr--reveal-ready');
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    root.querySelectorAll('[data-gr-reveal]').forEach(function (el) { observer.observe(el); });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Garantie remboursement",
+  "tag": "div",
+  "class": "section-money-back-guarantee",
+  "settings": [
+    { "type": "header", "content": "Mise en page" },
+    {
+      "type": "select",
+      "id": "layout_type",
+      "label": "Largeur de la section",
+      "options": [
+        { "value": "page", "label": "Largeur de page" },
+        { "value": "narrow", "label": "Étroite (900px)" },
+        { "value": "full", "label": "Pleine largeur" }
+      ],
+      "default": "page"
+    },
+    {
+      "type": "range",
+      "id": "section_max_width",
+      "label": "Largeur max (largeur de page)",
+      "min": 800,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1200
+    },
+    {
+      "type": "select",
+      "id": "background_style",
+      "label": "Style du fond",
+      "options": [
+        { "value": "full", "label": "Pleine largeur" },
+        { "value": "boxed", "label": "Boîte arrondie" }
+      ],
+      "default": "full"
+    },
+    {
+      "type": "range",
+      "id": "section_radius",
+      "label": "Arrondi de la boîte",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 24,
+      "info": "S'applique au style « Boîte arrondie »."
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Position de l'image (ordinateur)",
+      "options": [
+        { "value": "right", "label": "Droite" },
+        { "value": "left", "label": "Gauche" }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "label": "Largeur colonne texte",
+      "min": 35,
+      "max": 70,
+      "step": 1,
+      "unit": "%",
+      "default": 52
+    },
+    {
+      "type": "range",
+      "id": "content_max_width",
+      "label": "Largeur max du contenu",
+      "min": 320,
+      "max": 800,
+      "step": 10,
+      "unit": "px",
+      "default": 560
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "label": "Espace entre les colonnes",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "select",
+      "id": "vertical_align",
+      "label": "Alignement vertical",
+      "options": [
+        { "value": "start", "label": "Haut" },
+        { "value": "center", "label": "Centre" },
+        { "value": "end", "label": "Bas" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "desktop_text_align",
+      "label": "Alignement du texte (ordinateur)",
+      "options": [
+        { "value": "left", "label": "Gauche" },
+        { "value": "center", "label": "Centre" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "text",
+      "id": "section_label",
+      "label": "Libellé d'accessibilité de la section",
+      "default": "Money-back guarantee"
+    },
+    { "type": "header", "content": "Mobile" },
+    {
+      "type": "select",
+      "id": "mobile_image_position",
+      "label": "Position de l'image (mobile)",
+      "options": [
+        { "value": "top", "label": "Au-dessus du texte" },
+        { "value": "bottom", "label": "Sous le texte" }
+      ],
+      "default": "bottom"
+    },
+    {
+      "type": "select",
+      "id": "mobile_text_align",
+      "label": "Alignement du texte (mobile)",
+      "options": [
+        { "value": "left", "label": "Gauche" },
+        { "value": "center", "label": "Centre" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "mobile_row_gap",
+      "label": "Espace texte / image (mobile)",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 36
+    },
+    { "type": "header", "content": "Image" },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Texte alternatif (optionnel)",
+      "info": "Laissez vide pour utiliser le texte alternatif de l'image."
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Format de l'image",
+      "options": [
+        { "value": "square", "label": "Carré (1:1)" },
+        { "value": "portrait", "label": "Portrait (4:5)" },
+        { "value": "landscape", "label": "Paysage (4:3)" },
+        { "value": "natural", "label": "Format d'origine" }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "range",
+      "id": "image_radius",
+      "label": "Arrondi de l'image",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "checkbox",
+      "id": "image_shadow",
+      "label": "Ombre sur l'image",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "image_hover_zoom",
+      "label": "Zoom léger au survol",
+      "default": true
+    },
+    { "type": "header", "content": "Couleurs" },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Fond",
+      "default": "#F6F3EC"
+    },
+    {
+      "type": "checkbox",
+      "id": "background_gradient",
+      "label": "Fond en dégradé",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "background_color_2",
+      "label": "Fond – 2e couleur du dégradé",
+      "default": "#FCFBF8"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_glow",
+      "label": "Halo lumineux derrière le badge",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "glow_color",
+      "label": "Couleur du halo",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "eyebrow_color",
+      "label": "Sur-titre",
+      "default": "#3F7F6B"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Titre",
+      "default": "#17251F"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Mot en italique (accent)",
+      "default": "#3F7F6B"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Texte",
+      "default": "#55595A"
+    },
+    {
+      "type": "color",
+      "id": "button_color",
+      "label": "Bouton – couleur 1",
+      "default": "#1F4D42"
+    },
+    {
+      "type": "color",
+      "id": "button_color_2",
+      "label": "Bouton – couleur 2 (dégradé)",
+      "default": "#3D7A68"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Bouton – texte",
+      "default": "#FFFFFF"
+    },
+    { "type": "header", "content": "Typographie" },
+    {
+      "type": "select",
+      "id": "heading_font",
+      "label": "Police du titre",
+      "options": [
+        { "value": "geometric", "label": "Sans-serif géométrique" },
+        { "value": "system", "label": "Système" },
+        { "value": "serif", "label": "Serif" },
+        { "value": "inherit", "label": "Police du thème" }
+      ],
+      "default": "geometric"
+    },
+    {
+      "type": "select",
+      "id": "accent_font",
+      "label": "Police du mot accent",
+      "options": [
+        { "value": "serif", "label": "Serif italique" },
+        { "value": "same", "label": "Identique au titre (italique)" }
+      ],
+      "default": "serif"
+    },
+    {
+      "type": "select",
+      "id": "body_font",
+      "label": "Police du texte",
+      "options": [
+        { "value": "geometric", "label": "Sans-serif géométrique" },
+        { "value": "system", "label": "Système" },
+        { "value": "inherit", "label": "Police du thème" }
+      ],
+      "default": "geometric"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Taille du titre (ordinateur)",
+      "min": 24,
+      "max": 64,
+      "step": 1,
+      "unit": "px",
+      "default": 42
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "Taille du titre (mobile)",
+      "min": 20,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 31
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Taille du texte (ordinateur)",
+      "min": 12,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "text_size_mobile",
+      "label": "Taille du texte (mobile)",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    { "type": "header", "content": "Espacements" },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute (ordinateur)",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse (ordinateur)",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Marge haute (mobile)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Marge basse (mobile)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "side_padding",
+      "label": "Marges latérales (ordinateur)",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "side_padding_mobile",
+      "label": "Marges latérales (mobile)",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    { "type": "header", "content": "Animation" },
+    {
+      "type": "checkbox",
+      "id": "enable_reveal",
+      "label": "Apparition au défilement",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    {
+      "type": "badge",
+      "name": "Badge garantie",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "custom_image",
+          "label": "Image de badge personnalisée",
+          "info": "Optionnel. Remplace le badge dessiné."
+        },
+        {
+          "type": "text",
+          "id": "number",
+          "label": "Chiffre",
+          "default": "30"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Libellé",
+          "default": "DAYS"
+        },
+        {
+          "type": "text",
+          "id": "sublabel",
+          "label": "Sous-libellé",
+          "default": "GUARANTEE"
+        },
+        {
+          "type": "range",
+          "id": "size",
+          "label": "Taille (ordinateur)",
+          "min": 80,
+          "max": 220,
+          "step": 4,
+          "unit": "px",
+          "default": 140
+        },
+        {
+          "type": "range",
+          "id": "size_mobile",
+          "label": "Taille (mobile)",
+          "min": 68,
+          "max": 180,
+          "step": 4,
+          "unit": "px",
+          "default": 116
+        },
+        {
+          "type": "color",
+          "id": "color_1",
+          "label": "Couleur du sceau 1",
+          "default": "#3E7B69"
+        },
+        {
+          "type": "color",
+          "id": "color_2",
+          "label": "Couleur du sceau 2",
+          "default": "#1E4A3F"
+        },
+        {
+          "type": "color",
+          "id": "number_color",
+          "label": "Couleur du chiffre",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "color",
+          "id": "sublabel_color",
+          "label": "Couleur dorée (sous-libellé, étoiles)",
+          "default": "#D9B76A"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_stars",
+          "label": "Afficher les étoiles",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "animation",
+          "label": "Animation",
+          "options": [
+            { "value": "none", "label": "Aucune" },
+            { "value": "float", "label": "Flottement doux" },
+            { "value": "spin", "label": "Rotation lente du bord" }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "range",
+          "id": "spacing_bottom",
+          "label": "Espace en dessous",
+          "min": 0,
+          "max": 80,
+          "step": 2,
+          "unit": "px",
+          "default": 36
+        }
+      ]
+    },
+    {
+      "type": "eyebrow",
+      "name": "Sur-titre",
+      "limit": 2,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Texte",
+          "default": "Feel the difference"
+        },
+        {
+          "type": "range",
+          "id": "size",
+          "label": "Taille",
+          "min": 10,
+          "max": 16,
+          "step": 1,
+          "unit": "px",
+          "default": 12
+        },
+        {
+          "type": "range",
+          "id": "letter_spacing",
+          "label": "Espacement des lettres",
+          "min": 0,
+          "max": 30,
+          "step": 1,
+          "default": 16,
+          "info": "En centièmes d'em."
+        },
+        {
+          "type": "range",
+          "id": "spacing_bottom",
+          "label": "Espace en dessous",
+          "min": 0,
+          "max": 60,
+          "step": 2,
+          "unit": "px",
+          "default": 12
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "name": "Titre",
+      "limit": 2,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading_start",
+          "label": "Début du titre",
+          "default": "30-Day"
+        },
+        {
+          "type": "text",
+          "id": "heading_accent",
+          "label": "Mot(s) en italique (accent)",
+          "default": "Money-Back"
+        },
+        {
+          "type": "text",
+          "id": "heading_end",
+          "label": "Fin du titre",
+          "default": "Guarantee"
+        },
+        {
+          "type": "checkbox",
+          "id": "end_on_new_line",
+          "label": "Fin du titre à la ligne",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "heading_tag",
+          "label": "Niveau de titre (SEO)",
+          "options": [
+            { "value": "h2", "label": "H2" },
+            { "value": "h3", "label": "H3" },
+            { "value": "p", "label": "Paragraphe" }
+          ],
+          "default": "h2"
+        },
+        {
+          "type": "range",
+          "id": "spacing_bottom",
+          "label": "Espace en dessous",
+          "min": 0,
+          "max": 60,
+          "step": 2,
+          "unit": "px",
+          "default": 18
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Texte",
+      "limit": 3,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texte",
+          "default": "<p>If you don't notice a real difference in your body odor, breath, or overall freshness within 30 days, we'll give you a full refund — no questions asked.</p>"
+        },
+        {
+          "type": "range",
+          "id": "max_width",
+          "label": "Largeur max du texte",
+          "min": 260,
+          "max": 800,
+          "step": 10,
+          "unit": "px",
+          "default": 520
+        },
+        {
+          "type": "range",
+          "id": "spacing_bottom",
+          "label": "Espace en dessous",
+          "min": 0,
+          "max": 80,
+          "step": 2,
+          "unit": "px",
+          "default": 30
+        }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "Bouton",
+      "limit": 2,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Texte du bouton",
+          "default": "Try risk-free today"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Lien",
+          "info": "Laissez vide pour faire défiler la page jusqu'au formulaire produit (où se trouve votre app de Bundle)."
+        },
+        {
+          "type": "text",
+          "id": "scroll_target",
+          "label": "Cible du défilement (optionnel)",
+          "info": "ID ou sélecteur CSS de votre app de Bundle, ex. #bundle-app. Vide = formulaire produit."
+        },
+        {
+          "type": "range",
+          "id": "scroll_offset",
+          "label": "Décalage du défilement (en-tête fixe)",
+          "min": 0,
+          "max": 200,
+          "step": 10,
+          "unit": "px",
+          "default": 100
+        },
+        {
+          "type": "select",
+          "id": "button_style",
+          "label": "Style",
+          "options": [
+            { "value": "filled", "label": "Plein (dégradé)" },
+            { "value": "outline", "label": "Contour" }
+          ],
+          "default": "filled"
+        },
+        {
+          "type": "range",
+          "id": "radius",
+          "label": "Arrondi",
+          "min": 0,
+          "max": 40,
+          "step": 1,
+          "unit": "px",
+          "default": 40
+        },
+        {
+          "type": "checkbox",
+          "id": "show_arrow",
+          "label": "Afficher la flèche",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "full_width_mobile",
+          "label": "Pleine largeur sur mobile",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "spacing_bottom",
+          "label": "Espace en dessous",
+          "min": 0,
+          "max": 60,
+          "step": 2,
+          "unit": "px",
+          "default": 0
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Garantie remboursement",
+      "blocks": [
+        { "type": "badge" },
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "text" },
+        { "type": "button" }
+      ]
+    }
+  ]
+}
+{% endschema %}
